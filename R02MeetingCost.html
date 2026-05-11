@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Meeting Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --accent: #38bdf8;
+            --money-green: #4ade80;
+            --warning-red: #ef4444;
+        }
+
+        /* Mobile adjustments */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Better for mobile scrolling */
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 2rem 1.5rem;
+            border-radius: 1.25rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+            margin-top: 20px;
+        }
+
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        h1 { font-size: 1.25rem; margin-bottom: 1.5rem; }
+
+        /* Larger touch targets for iPhone */
+        .btn {
+            background-color: var(--accent);
+            color: var(--bg-color);
+            border: none;
+            padding: 1.2rem;
+            border-radius: 0.75rem;
+            font-weight: bold;
+            font-size: 1rem;
+            width: 100%;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+        }
+
+        .btn-secondary { background-color: #475569; color: white; }
+        .btn-danger { background-color: var(--warning-red); color: white; }
+        .btn-success { background-color: var(--money-green); color: var(--bg-color); }
+
+        input {
+            background: var(--bg-color);
+            border: 2px solid #334155;
+            color: white;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            font-size: 1.2rem;
+            width: 100%;
+            margin-bottom: 1rem;
+            text-align: center;
+            /* Prevents iOS zooming on input focus */
+            font-size: 16px; 
+        }
+
+        .label { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 0.5rem; display: block; }
+        .value { font-variant-numeric: tabular-nums; font-size: 2.5rem; font-weight: 800; margin-bottom: 1.5rem; }
+        #currentTimeDisplay { font-size: 1.2rem; margin-bottom: 1.5rem; opacity: 0.8; }
+        
+        .summary-item {
+            background: rgba(0,0,0,0.2);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            text-align: left;
+        }
+        .sum-val { float: right; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="screenSelection" class="screen active">
+        <h1>Meeting Dashboard</h1>
+        <button class="btn" onclick="showSetup('coster')">Meeting Coster</button>
+        <button class="btn" onclick="showSetup('timer')">Decision Timer</button>
+    </div>
+
+    <div id="screenSetup" class="screen">
+        <h1 id="setupTitle">Setup</h1>
+        <input type="number" id="hourlyRate" placeholder="Hourly Rate (£)" inputmode="decimal">
+        <div id="budgetInputGroup">
+            <input type="number" id="budgetAmount" placeholder="Budget (£)" inputmode="decimal">
+        </div>
+        <button class="btn" onclick="startEngine()">Start Session</button>
+        <button class="btn btn-secondary" onclick="goHome()">Cancel</button>
+    </div>
+
+    <div id="screenDashboard" class="screen">
+        <div id="currentTimeDisplay">00:00:00</div>
+        
+        <span id="timeLabel" class="label">Time</span>
+        <div id="timeValue" class="value">00:00:00</div>
+
+        <span id="costLabel" class="label">Cost</span>
+        <div id="costValue" class="value" style="color: var(--money-green);">£0.00</div>
+        
+        <button class="btn btn-danger" onclick="endSession()">End Meeting</button>
+    </div>
+
+    <div id="screenSummary" class="screen">
+        <h1>Summary</h1>
+        <div class="summary-item"><span class="label">Date</span><span id="sumDate" class="sum-val"></span></div>
+        <div class="summary-item"><span class="label">Time</span><span id="sumPeriod" class="sum-val"></span></div>
+        <div class="summary-item"><span class="label">Duration</span><span id="sumElapsed" class="sum-val"></span></div>
+        <div class="summary-item"><span class="label">Total Cost</span><span id="sumCost" class="sum-val"></span></div>
+        
+        <button class="btn btn-success" onclick="copySummary()">Copy for Sheet</button>
+        <button class="btn btn-secondary" onclick="goHome()">New Session</button>
+    </div>
+</div>
+
+<script>
+    let mode, timerInterval, startTime, endTime, ratePerSecond, totalBudget, totalSecondsAllowed;
+
+    function showSetup(sMode) {
+        mode = sMode;
+        document.getElementById('screenSelection').classList.remove('active');
+        document.getElementById('screenSetup').classList.add('active');
+        document.getElementById('budgetInputGroup').style.display = mode === 'coster' ? 'none' : 'block';
+    }
+
+    function goHome() {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('screenSelection').classList.add('active');
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+
+    function startEngine() {
+        const rate = parseFloat(document.getElementById('hourlyRate').value);
+        if (!rate) return alert("Please enter a rate");
+        ratePerSecond = rate / 3600;
+
+        if (mode === 'timer') {
+            totalBudget = parseFloat(document.getElementById('budgetAmount').value);
+            totalSecondsAllowed = totalBudget / ratePerSecond;
+            document.getElementById('timeLabel').innerText = "Remaining";
+        }
+
+        startTime = new Date();
+        document.getElementById('screenSetup').classList.remove('active');
+        document.getElementById('screenDashboard').classList.add('active');
+        timerInterval = setInterval(update, 1000);
+    }
+
+    function update() {
+        const now = new Date();
+        document.getElementById('currentTimeDisplay').innerText = now.toLocaleTimeString('en-GB');
+        const elapsed = (now - startTime) / 1000;
+
+        if (mode === 'coster') {
+            document.getElementById('timeValue').innerText = formatTime(elapsed);
+            document.getElementById('costValue').innerText = `£${(elapsed * ratePerSecond).toFixed(2)}`;
+        } else {
+            const left = Math.max(0, totalSecondsAllowed - elapsed);
+            document.getElementById('timeValue').innerText = formatTime(left);
+            document.getElementById('costValue').innerText = `£${(Math.max(0, totalBudget - (elapsed * ratePerSecond))).toFixed(2)}`;
+        }
+    }
+
+    function formatTime(sec) {
+        const h = Math.floor(sec / 3600).toString().padStart(2, '0');
+        const m = Math.floor((sec % 3600) / 60).toString().padStart(2, '0');
+        const s = Math.floor(sec % 60).toString().padStart(2, '0');
+        return `${h}:${m}:${s}`;
+    }
+
+    function endSession() {
+        endTime = new Date();
+        clearInterval(timerInterval);
+        const totalElapsed = (endTime - startTime) / 1000;
+        const totalCost = (totalElapsed * ratePerSecond).toFixed(2);
+
+        document.getElementById('sumDate').innerText = startTime.toLocaleDateString('en-GB');
+        document.getElementById('sumPeriod').innerText = `${startTime.getHours()}:${startTime.getMinutes().toString().padStart(2,'0')} - ${endTime.getHours()}:${endTime.getMinutes().toString().padStart(2,'0')}`;
+        document.getElementById('sumElapsed').innerText = formatTime(totalElapsed);
+        document.getElementById('sumCost').innerText = `£${totalCost}`;
+
+        document.getElementById('screenDashboard').classList.remove('active');
+        document.getElementById('screenSummary').classList.add('active');
+    }
+
+    function copySummary() {
+        const date = document.getElementById('sumDate').innerText;
+        const cost = document.getElementById('sumCost').innerText.replace('£', '');
+        const duration = document.getElementById('sumElapsed').innerText;
+        const text = `${date}\t${mode}\t${duration}\t${cost}`;
+        
+        navigator.clipboard.writeText(text).then(() => {
+            alert("Copied to clipboard (Tab-separated)");
+        });
+    }
+
+    // Background wall clock
+    setInterval(() => {
+        if (!timerInterval) {
+            const display = document.getElementById('currentTimeDisplay');
+            if (display) display.innerText = new Date().toLocaleTimeString('en-GB');
+        }
+    }, 1000);
+</script>
+</body>
+</html>

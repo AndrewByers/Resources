@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resource Directory | IC26</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --primary: #2563eb;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --accent: #f1f5f9;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            max-width: 800px;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        .resource-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        a.resource-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px -10px rgba(0,0,0,0.08);
+            border-color: var(--primary);
+        }
+
+        .resource-card.placeholder {
+            border-style: dashed;
+            cursor: default;
+            opacity: 0.6;
+        }
+
+        .resource-id {
+            font-family: monospace;
+            font-size: 0.7rem;
+            color: var(--primary);
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .placeholder .resource-id {
+            color: var(--text-muted);
+        }
+
+        .resource-name {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+        }
+
+        .resource-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+
+        .file-badge {
+            align-self: flex-start;
+            background: var(--accent);
+            color: var(--text-muted);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            border: 1px solid var(--border);
+        }
+
+        a.resource-card:hover .file-badge {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .footer {
+            margin-top: 60px;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Resource Directory</h1>
+        <!-- Updated Header Text[cite: 1] -->
+        <p>Andrew Byers | BDB15 Ltd | Client Assets & Tools</p>
+    </div>
+
+    <div class="grid">
+        <!-- Card 1[cite: 1] -->
+        <a href="R01ExitMultiplier.html" class="resource-card" download>
+            <div class="resource-id">R-26001</div>
+            <div class="resource-name">Multiplier Calc</div>
+            <div class="resource-desc">This script allows you to view the business value with the founder as chairman.</div>
+            <div class="file-badge">html</div>
+        </a>
+
+        <!-- Card 2[cite: 1] -->
+        <a href="R02MeetingCost.html" class="resource-card">
+            <div class="resource-id">R-26002</div>
+            <div class="resource-name">Meeting Cost Clock</div>
+            <div class="resource-desc">True cost of meetings (by the second) and Countdown timer for decision costs</div>
+            <div class="file-badge">html</div>
+        </a>
+
+        <!-- Card 3[cite: 1] -->
+        <a href="R03AnalysisReport.html" class="resource-card">
+            <div class="resource-id">R-26003</div>
+            <div class="resource-name">Sample Analysis Report</div>
+            <div class="resource-desc">Comprehensive Analyst Report on Company of Interest.</div>
+            <div class="file-badge">html</div>
+        </a>
+
+        <!-- Card 4[cite: 1] -->
+        <a href="R04DueDilReport.html" class="resource-card">
+            <div class="resource-id">R-26004</div>
+            <div class="resource-name">Sample Due Diligence Report</div>
+            <div class="resource-desc">Brief Due Diligence background report.</div>
+            <div class="file-badge">pdf</div>
+        </a>
+
+        <!-- Card 5[cite: 1] -->
+        <a href="R05StrategicActionPlan.html" class="resource-card" download>
+            <div class="resource-id">R-26005</div>
+            <div class="resource-name">Strategic Action Plan</div>
+            <div class="resource-desc">Data entry template for measuring departmental throughput and bottlenecks.</div>
+            <div class="file-badge">xlsx</div>
+        </a>
+
+        <!-- Card 6[cite: 1] -->
+        <a href="decoupling-strategy.pdf" class="resource-card">
+            <div class="resource-id">R-26006</div>
+            <div class="resource-name">Decoupling Manual</div>
+            <div class="resource-desc">Legal and operational framework for separating founder identity from brand assets.</div>
+            <div class="file-badge">pdf</div>
+        </a>
+
+        <!-- Card 7[cite: 1] -->
+        <a href="innovation-brief.html" class="resource-card">
+            <div class="resource-id">R-26007</div>
+            <div class="resource-name">Phase M4 Briefing</div>
+            <div class="resource-desc">Executive summary of innovation opportunities identified during discovery.</div>
+            <div class="file-badge">html</div>
+        </a>
+
+        <!-- Card 8: Blank Placeholder[cite: 1] -->
+        <div class="resource-card placeholder">
+            <div class="resource-id">R-2600x</div>
+            <div class="resource-name" style="color: #94a3b8;">..</div>
+            <div class="resource-desc">..</div>
+            <div class="file-badge">..</div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <!-- Updated Footer Text[cite: 1] -->
+        (C) BDB15 Limited 2026
+    </div>
+
+</body>
+</html>
