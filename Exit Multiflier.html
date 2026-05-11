@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Andrew Byers | Innovation Coach - Chief to Chairman Advisory</title>
+    <style>
+        :root {
+            --navy: #0a192f;
+            --gold: #f39c12;
+            --slate: #2c3e50;
+            --light-grey: #f4f7f9;
+            --white: #ffffff;
+            --success: #27ae60;
+        }
+
+        * { box-sizing: border-box; scroll-behavior: smooth; }
+        body { 
+            font-family: 'Inter', 'Segoe UI', sans-serif; 
+            margin: 0; 
+            color: var(--slate); 
+            line-height: 1.6; 
+            background-color: var(--white);
+        }
+        
+        h1, h2, h3 { font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--navy); }
+
+        /* Navigation */
+        nav { 
+            background: var(--navy); 
+            padding: 20px 50px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .logo { color: var(--white); font-weight: bold; font-size: 1.1rem; letter-spacing: 2px; }
+        .nav-links a { color: var(--white); text-decoration: none; margin-left: 30px; font-size: 0.85rem; transition: 0.3s; text-transform: uppercase; }
+        .nav-links a:hover { color: var(--gold); }
+
+        /* Hero Section */
+        .hero { 
+            background: linear-gradient(rgba(10, 25, 47, 0.9), rgba(10, 25, 47, 0.9)), 
+                        url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=2069') no-repeat center center/cover;
+            height: 90vh; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            text-align: center; 
+            color: var(--white);
+            padding: 0 20px;
+        }
+        .hero h1 { font-size: 3.5rem; margin-bottom: 20px; max-width: 900px; color: var(--white); }
+        .hero p { font-size: 1.3rem; max-width: 800px; color: #ccd6f6; margin-bottom: 40px; font-weight: 300; }
+        .btn-primary { 
+            background: var(--gold); 
+            color: var(--navy); 
+            padding: 18px 45px; 
+            text-decoration: none; 
+            font-weight: bold; 
+            border-radius: 2px;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn-primary:hover { background: #e67e22; transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+
+        /* Philosophy (The Mirror) */
+        .philosophy { padding: 100px 50px; text-align: center; background: var(--white); }
+        .quote { font-style: italic; font-size: 1.8rem; color: var(--navy); max-width: 850px; margin: 0 auto 30px; font-family: 'serif'; }
+        .philosophy p { max-width: 750px; margin: 0 auto; font-size: 1.1rem; color: #555; }
+
+        /* Value Calculator Section */
+        .calculator-section { background: var(--light-grey); padding: 100px 50px; text-align: center; }
+        .calc-container { 
+            max-width: 800px; 
+            margin: 40px auto; 
+            background: white; 
+            padding: 50px; 
+            border-radius: 8px; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+            text-align: left;
+        }
+        .calc-row { margin-bottom: 30px; }
+        .calc-row label { display: block; font-weight: bold; margin-bottom: 10px; color: var(--navy); text-transform: uppercase; font-size: 0.8rem; }
+        input[type="range"] { width: 100%; cursor: pointer; accent-color: var(--gold); }
+        .result-box { 
+            background: var(--navy); 
+            color: white; 
+            padding: 30px; 
+            border-radius: 4px; 
+            text-align: center;
+            margin-top: 40px;
+        }
+        .result-box h4 { color: var(--gold); margin: 0; font-size: 1rem; }
+        .result-box .value { font-size: 2.5rem; font-weight: bold; margin: 10px 0; }
+        .value-gap { color: var(--success); font-weight: bold; }
+
+        /* Footer */
+        footer { background: #020c1b; color: #444d66; padding: 40px; text-align: center; font-size: 0.8rem; }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .calc-container { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="logo">ANDREW BYERS // INNOVATION COACH</div>
+    <div class="nav-links">
+        <a href="#about">Philosophy</a>
+        <a href="#calculator">Value Calculator</a>
+        <a href="#contact">Audit</a>
+    </div>
+</nav>
+
+<section class="hero">
+    <h1>From The Chief to The Chairman.</h1>
+    <p>You have spent years leading the work. <br>Now, it is time to architect the value.</p>
+    <div style="margin-top: 25px;">
+        <span style="color: var(--gold); font-weight: bold; text-transform: uppercase; letter-spacing: 2px;">£5M - £50M Scale | Exit Maximisation</span>
+    </div>
+    <a href="#contact" class="btn-primary" style="margin-top: 40px;">Request a Strategic Value Audit</a>
+</section>
+
+<section class="philosophy" id="about">
+    <div class="quote">"O wad some Power the giftie gie us, To see oursels as ithers see us!"</div>
+    <p><strong>— Robert Burns</strong></p>
+    <div style="margin-top: 40px;">
+        <p>Your grit and ability got you to £5M. But those same strengths are now your greatest liabilities. When a business relies on its <strong>Chief</strong> for daily delivery, it is a high-risk operation. When it runs under a <strong>Chairman</strong>, it is a high-value asset.</p>
+        <p style="margin-top: 20px;">I act as your <strong>Objective Mirror</strong>, helping you build the infrastructure required to scale to £50M or exit for your maximum multiple.</p>
+    </div>
+</section>
+
+<section class="calculator-section" id="calculator">
+    <h2>The Exit Multiple Calculator</h2>
+    <p>See how your current "Founder Dependency" is affecting your business valuation.</p>
+    
+    <div class="calc-container">
+        <div class="calc-row">
+            <label>Annual EBITDA (£)</label>
+            <input type="range" id="ebitda" min="500000" max="5000000" step="100000" value="1000000" oninput="calculate()">
+            <div style="display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: bold;">
+                <span>£500k</span>
+                <span id="ebitda-val" style="color: var(--gold);">£1,000,000</span>
+                <span>£5M</span>
+            </div>
+        </div>
+
+        <div class="calc-row">
+            <label>Founder Dependency (The "Linchpin" Factor)</label>
+            <input type="range" id="dependency" min="1" max="3" step="1" value="3" oninput="calculate()">
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: bold;">
+                <span>SYSTEM-LED (CHAIRMAN)</span>
+                <span>PARTIAL DEPENDENCY</span>
+                <span>HIGH DEPENDENCY (CHIEF)</span>
+            </div>
+        </div>
+
+        <div class="result-box">
+            <h4>Estimated Business Valuation</h4>
+            <div class="value" id="total-val">£3,000,000</div>
+            <p>Multiple Applied: <span id="multiple-val">3</span>x EBITDA</p>
+            <div class="value-gap" id="gap-analysis"></div>
+        </div>
+        
+        <p style="font-size: 0.8rem; color: #777; margin-top: 20px; font-style: italic;">
+            *This calculator is illustrative. Higher multiples are achieved when the Founder transitions to a Chairman role, allowing the 'Machine' to operate autonomously.
+        </p>
+    </div>
+</section>
+
+<section style="background: var(--navy); color: white; padding: 100px 50px; text-align: center;" id="contact">
+    <h2>Stop Running. Start Designing.</h2>
+    <p>Strategic partnerships for founders looking to reclaim their time and double their enterprise value.</p>
+    <a href="mailto:andrew@andrewbyers.me.uk" class="btn-primary">Request a Confidential Consultation</a>
+</section>
+
+<footer>
+    &copy; 2026 Andrew Byers Innovation Coach | Strategic Advisory for Scaling Enterprises.<br>
+    <a href="#" style="color: #444d66; text-decoration: none; margin-top: 10px; display: block;">Privacy Policy & GDPR Compliance</a>
+</footer>
+
+<script>
+function calculate() {
+    const ebitda = document.getElementById('ebitda').value;
+    const dependency = document.getElementById('dependency').value;
+    
+    document.getElementById('ebitda-val').innerText = '£' + Number(ebitda).toLocaleString();
+    
+    let multiple = 0;
+    let message = "";
+    
+    if (dependency == 3) { 
+        multiple = 3; 
+        message = "Founder Dependency is costing you up to 5x in lost multiple value.";
+    } else if (dependency == 2) { 
+        multiple = 5; 
+        message = "Partial autonomy reached. Move to 'Chairman' to unlock an 8x+ multiple.";
+    } else { 
+        multiple = 8; 
+        message = "Architectural Excellence. Your business is now a highly saleable asset.";
+    }
+    
+    const valuation = ebitda * multiple;
+    document.getElementById('total-val').innerText = '£' + valuation.toLocaleString();
+    document.getElementById('multiple-val').innerText = multiple;
+    document.getElementById('gap-analysis').innerText = message;
+}
+// Initial run
+calculate();
+</script>
+
+</body>
+</html>
