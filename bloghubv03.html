@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Post Idea Hub</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Header / Navbar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <h1 class="text-xl font-bold tracking-tight text-slate-900">Blog Idea Hub</h1>
+            
+            <!-- Controls & Filters -->
+            <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+                <!-- Area of Focus Filter Dropdown -->
+                <div class="relative">
+                    <select id="filterAreaDropdown" onchange="filterByArea(this)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-4 py-2 rounded-lg shadow-sm transition cursor-pointer appearance-none pr-8 border border-slate-200">
+                        <option value="ALL">All Areas of Focus</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+
+                <!-- Actions Dropdown -->
+                <div class="relative">
+                    <select id="actionMenu" onchange="handleMenuAction(this)" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-lg shadow transition cursor-pointer appearance-none pr-8">
+                        <option value="" disabled selected>Actions...</option>
+                        <option value="new">+ Add New Project</option>
+                        <option value="complete">Mark Project as Completed</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-white">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="max-w-7xl mx-auto px-4 py-8 flex-grow w-full">
+        <div class="flex justify-between items-center mb-6">
+            <h2 id="activeHeader" class="text-lg font-semibold text-slate-700">Active Projects</h2>
+            <span id="projectCount" class="text-sm text-slate-500 bg-slate-200 px-3 py-1 rounded-full">0 active</span>
+        </div>
+
+        <!-- Grid Container -->
+        <div id="projectGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <!-- Dynamic Cards Will Inject Here -->
+        </div>
+    </main>
+
+    <!-- Detail / Edit Modal -->
+    <div id="projectModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 id="modalTitle" class="font-bold text-lg text-slate-800">Project Details</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto space-y-4 flex-grow" id="modalBody">
+                <!-- Content injected dynamically -->
+            </div>
+
+            <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end space-x-3">
+                <button onclick="closeModal()" class="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-100 transition font-medium">Close</button>
+                <button id="editSaveBtn" onclick="toggleEditMode()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition font-medium">Edit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Project Form Modal -->
+    <div id="newProjectModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-bold text-lg text-slate-800">New Blog Post Idea</h3>
+                <button onclick="closeNewModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+            </div>
+            
+            <form id="newProjectForm" onsubmit="submitNewProject(event)" class="p-6 overflow-y-auto space-y-4 flex-grow">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Heading</label>
+                    <input type="text" name="heading" required class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Area of Focus</label>
+                    <input type="text" name="areaOfFocus" required class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Target Audience</label>
+                    <input type="text" name="targetAudience" required class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Main Body Text</label>
+                    <textarea name="mainBody" rows="4" required class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Links</label>
+                    <input type="text" name="links" placeholder="Comma separated URLs" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Priority</label>
+                    <select name="priority" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        <option value="1-Now">1 - Now</option>
+                        <option value="2-Soon">2 - Soon</option>
+                        <option value="3-Whenever">3 - Whenever</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Notes</label>
+                    <textarea name="notes" rows="2" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                </div>
+                <div class="flex justify-end space-x-3 pt-4 border-t border-slate-100">
+                    <button type="button" onclick="closeNewModal()" class="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-100 transition font-medium">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition font-medium">Save to Sheet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Application Logic -->
+    <script>
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwB2oyp1plRynZLJmazQNxWCGOj1UtwU8HAC4m9Ur70SOIHQ3BhGDo9wfl8B87FmFDA/exec";
+
+        let projects = [];
+        let currentActiveId = null;
+        let isEditing = false;
+        let selectedAreaFilter = "ALL";
+
+        const colorPalette = [
+            { bg: 'bg-amber-50', border: 'border-amber-200', badge: 'bg-amber-100 text-amber-800' },
+            { bg: 'bg-emerald-50', border: 'border-emerald-200', badge: 'bg-emerald-100 text-emerald-800' },
+            { bg: 'bg-sky-50', border: 'border-sky-200', badge: 'bg-sky-100 text-sky-800' },
+            { bg: 'bg-purple-50', border: 'border-purple-200', badge: 'bg-purple-100 text-purple-800' },
+            { bg: 'bg-rose-50', border: 'border-rose-200', badge: 'bg-rose-100 text-rose-800' },
+            { bg: 'bg-teal-50', border: 'border-teal-200', badge: 'bg-teal-100 text-teal-800' },
+            { bg: 'bg-indigo-50', border: 'border-indigo-200', badge: 'bg-indigo-100 text-indigo-800' },
+            { bg: 'bg-orange-50', border: 'border-orange-200', badge: 'bg-orange-100 text-orange-800' }
+        ];
+
+        const areaColorMap = {};
+
+        function getAreaColor(area) {
+            const cleanArea = (area || 'General').trim().toLowerCase();
+            if (!areaColorMap[cleanArea]) {
+                const paletteIndex = Object.keys(areaColorMap).length % colorPalette.length;
+                areaColorMap[cleanArea] = colorPalette[paletteIndex];
+            }
+            return areaColorMap[cleanArea];
+        }
+
+        async function fetchProjects() {
+            if (WEB_APP_URL.includes("YOUR_GOOGLE")) {
+                projects = [
+                    { id: "1", date: "2026-06-06", time: "12:00", heading: "Scaling Tips", areaOfFocus: "Business", targetAudience: "Founders", mainBody: "Body text 1...", links: "", priority: "1-Now", notes: "", completed: false },
+                    { id: "2", date: "2026-06-06", time: "12:05", heading: "Advanced Python", areaOfFocus: "Tech", targetAudience: "Devs", mainBody: "Body text 2...", links: "", priority: "2-Soon", notes: "", completed: false },
+                    { id: "3", date: "2026-06-06", time: "12:10", heading: "API Setup", areaOfFocus: "Tech", targetAudience: "Engineers", mainBody: "Body text 3...", links: "", priority: "1-Now", notes: "", completed: false }
+                ];
+                updateAreaFilterDropdown();
+                renderGrid();
+                return;
+            }
+
+            try {
+                const response = await fetch(WEB_APP_URL);
+                const data = await response.json();
+                projects = data;
+                updateAreaFilterDropdown();
+                renderGrid();
+            } catch (err) {
+                console.error("Error fetching projects:", err);
+            }
+        }
+
+        function updateAreaFilterDropdown() {
+            const dropdown = document.getElementById('filterAreaDropdown');
+            const activeProjects = projects.filter(p => !p.completed);
+            
+            // Extract unique areas of focus and sort them alphabetically
+            const uniqueAreas = [...new Set(activeProjects.map(p => (p.areaOfFocus || 'General').trim()))].sort((a, b) => a.localeCompare(b));
+            
+            // Retain currently selected value if possible
+            const currentSelection = dropdown.value;
+
+            dropdown.innerHTML = `<option value="ALL">All Areas of Focus</option>`;
+            uniqueAreas.forEach(area => {
+                const opt = document.createElement('option');
+                opt.value = area;
+                opt.innerText = area;
+                dropdown.appendChild(opt);
+            });
+
+            if (uniqueAreas.includes(currentSelection)) {
+                dropdown.value = currentSelection;
+            } else {
+                dropdown.value = "ALL";
+                selectedAreaFilter = "ALL";
+            }
+        }
+
+        function filterByArea(select) {
+            selectedAreaFilter = select.value;
+            renderGrid();
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('projectGrid');
+            
+            // 1. Filter active projects
+            let activeProjects = projects.filter(p => !p.completed);
+
+            // 2. Apply Area of Focus filter if selected
+            if (selectedAreaFilter !== "ALL") {
+                activeProjects = activeProjects.filter(p => (p.areaOfFocus || 'General').trim() === selectedAreaFilter);
+            }
+
+            // 3. Sort: 1st by Area of Focus (alphabetically), 2nd by Heading (alphabetically)
+            activeProjects.sort((a, b) => {
+                const areaA = (a.areaOfFocus || '').trim().toLowerCase();
+                const areaB = (b.areaOfFocus || '').trim().toLowerCase();
+                if (areaA < areaB) return -1;
+                if (areaA > areaB) return 1;
+
+                const headingA = (a.heading || '').trim().toLowerCase();
+                const headingB = (b.heading || '').trim().toLowerCase();
+                if (headingA < headingB) return -1;
+                if (headingA > headingB) return 1;
+                return 0;
+            });
+            
+            document.getElementById('projectCount').innerText = `${activeProjects.length} active`;
+            grid.innerHTML = '';
+
+            if (activeProjects.length === 0) {
+                grid.innerHTML = `<p class="text-slate-400 col-span-full text-center py-12">No active projects found matching this filter.</p>`;
+                return;
+            }
+
+            activeProjects.forEach(project => {
+                const colors = getAreaColor(project.areaOfFocus);
+                const card = document.createElement('div');
+                card.className = `${colors.bg} ${colors.border} border p-5 rounded-xl shadow-sm hover:shadow-md transition cursor-pointer flex flex-col justify-between h-44`;
+                card.onclick = () => openProjectModal(project.id);
+                card.innerHTML = `
+                    <div>
+                        <span class="text-xs font-semibold uppercase tracking-wider ${colors.badge} px-2 py-1 rounded">${project.areaOfFocus || 'General'}</span>
+                        <h3 class="font-bold text-slate-800 mt-2 line-clamp-2">${project.heading || 'Untitled Project'}</h3>
+                    </div>
+                    <div class="flex justify-between items-center text-xs text-slate-500 pt-2 border-t border-slate-200/60">
+                        <span>Priority: ${project.priority}</span>
+                        <span>${project.date}</span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function handleMenuAction(select) {
+            const val = select.value;
+            select.value = ""; 
+            if (val === 'new') {
+                document.getElementById('newProjectModal').classList.remove('hidden');
+                document.getElementById('newProjectModal').classList.add('flex');
+            } else if (val === 'complete') {
+                if (projects.filter(p => !p.completed).length === 0) {
+                    alert("No active projects to complete.");
+                    return;
+                }
+                const titleToComplete = prompt("Enter the exact heading of the project you want to mark as completed:");
+                const proj = projects.find(p => p.heading.toLowerCase() === titleToComplete?.toLowerCase());
+                if (proj) {
+                    updateProjectStatus(proj.id, true);
+                } else if (titleToComplete) {
+                    alert("Project not found.");
+                }
+            }
+        }
+
+        function closeNewModal() {
+            document.getElementById('newProjectModal').classList.add('hidden');
+            document.getElementById('newProjectModal').classList.remove('flex');
+        }
+
+        async function submitNewProject(e) {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            
+            const newProj = {
+                id: 'id_' + Date.now(),
+                date: new Date().toISOString().split('T')[0],
+                time: new Date().toLocaleTimeString(),
+                heading: formData.get('heading'),
+                areaOfFocus: formData.get('areaOfFocus'),
+                targetAudience: formData.get('targetAudience'),
+                mainBody: formData.get('mainBody'),
+                links: formData.get('links'),
+                priority: formData.get('priority'),
+                notes: formData.get('notes'),
+                completed: false
+            };
+
+            if (!WEB_APP_URL.includes("YOUR_GOOGLE")) {
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(newProj)
+                });
+            }
+
+            projects.push(newProj);
+            updateAreaFilterDropdown();
+            renderGrid();
+            form.reset();
+            closeNewModal();
+        }
+
+        function openProjectModal(id) {
+            currentActiveId = id;
+            isEditing = false;
+            const project = projects.find(p => p.id === id);
+            
+            document.getElementById('modalTitle').innerText = project.heading;
+            document.getElementById('editSaveBtn').innerText = "Edit";
+            
+            updateModalContent(project, false);
+            
+            const modal = document.getElementById('projectModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function updateModalContent(project, editMode) {
+            const body = document.getElementById('modalBody');
+            if (!editMode) {
+                body.innerHTML = `
+                    <div><strong class="text-slate-500 text-xs uppercase tracking-wider block">Area of Focus</strong><span class="text-slate-800">${project.areaOfFocus}</span></div>
+                    <div><strong class="text-slate-500 text-xs uppercase tracking-wider block">Target Audience</strong><span class="text-slate-800">${project.targetAudience}</span></div>
+                    <div><strong class="text-slate-500 text-xs uppercase tracking-wider block">Main Body Text</strong><p class="text-slate-800 whitespace-pre-line mt-1">${project.mainBody}</p></div>
+                    <div><strong class="text-slate-500 text-xs uppercase tracking-wider block">Links</strong><a href="${project.links}" target="_blank" class="text-indigo-600 underline">${project.links || 'None'}</a></div>
+                    <div><strong class="text-slate-500 text-xs uppercase tracking-wider block">Priority</strong><span class="text-slate-800">${project.priority}</span></div>
+                    <div><strong class="text-slate-500 text-xs uppercase tracking-wider block">Notes</strong><span class="text-slate-800">${project.notes || 'None'}</span></div>
+                `;
+            } else {
+                body.innerHTML = `
+                    <div><label class="text-xs font-medium text-slate-500">Heading</label><input id="editHeading" value="${project.heading}" class="w-full border rounded p-2 mt-1"></div>
+                    <div><label class="text-xs font-medium text-slate-500">Area of Focus</label><input id="editArea" value="${project.areaOfFocus}" class="w-full border rounded p-2 mt-1"></div>
+                    <div><label class="text-xs font-medium text-slate-500">Target Audience</label><input id="editAudience" value="${project.targetAudience}" class="w-full border rounded p-2 mt-1"></div>
+                    <div><label class="text-xs font-medium text-slate-500">Main Body Text</label><textarea id="editBody" rows="4" class="w-full border rounded p-2 mt-1">${project.mainBody}</textarea></div>
+                    <div><label class="text-xs font-medium text-slate-500">Links</label><input id="editLinks" value="${project.links}" class="w-full border rounded p-2 mt-1"></div>
+                    <div><label class="text-xs font-medium text-slate-500">Priority</label><input id="editPriority" value="${project.priority}" class="w-full border rounded p-2 mt-1"></div>
+                    <div><label class="text-xs font-medium text-slate-500">Notes</label><textarea id="editNotes" rows="2" class="w-full border rounded p-2 mt-1">${project.notes}</textarea></div>
+                `;
+            }
+        }
+
+        function toggleEditMode() {
+            const project = projects.find(p => p.id === currentActiveId);
+            if (!isEditing) {
+                isEditing = true;
+                document.getElementById('editSaveBtn').innerText = "Save Changes";
+                updateModalContent(project, true);
+            } else {
+                project.heading = document.getElementById('editHeading').value;
+                project.areaOfFocus = document.getElementById('editArea').value;
+                project.targetAudience = document.getElementById('editAudience').value;
+                project.mainBody = document.getElementById('editBody').value;
+                project.links = document.getElementById('editLinks').value;
+                project.priority = document.getElementById('editPriority').value;
+                project.notes = document.getElementById('editNotes').value;
+
+                isEditing = false;
+                document.getElementById('editSaveBtn').innerText = "Edit";
+                updateModalContent(project, false);
+                updateAreaFilterDropdown();
+                renderGrid();
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('projectModal').classList.add('hidden');
+            document.getElementById('projectModal').classList.remove('flex');
+        }
+
+        async function updateProjectStatus(id, completed) {
+            const proj = projects.find(p => p.id === id);
+            if (proj) {
+                proj.completed = completed;
+                updateAreaFilterDropdown();
+                renderGrid();
+                alert(`Project "${proj.heading}" marked as completed.`);
+            }
+        }
+
+        fetchProjects();
+    </script>
+</body>
+</html>
