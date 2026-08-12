@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MomoNote Web - Google Sheets Sync</title>
+    <style>
+        :root {
+            --bg-sidebar: #f3f3f3;
+            --bg-main: #ffffff;
+            --border-color: #d1d1d1;
+            --text-main: #333333;
+            --text-muted: #777777;
+            --accent-color: #0066cc;
+            --accent-hover: #0055b3;
+            --highlight-bg: #e6f0fa;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            color: var(--text-main);
+            background-color: var(--bg-main);
+        }
+
+        /* Setup Overlay for Google Sheets API Config */
+        #config-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .config-modal {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            width: 450px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .config-modal h2 {
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .config-modal p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .config-modal input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        .config-modal button {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+        }
+
+        .config-modal button:hover {
+            background: var(--accent-hover);
+        }
+
+        /* Sidebar Layout */
+        aside {
+            width: 260px;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .sidebar-header {
+            padding: 15px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Search Section below Calendar */
+        .search-section {
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--border-color);
+            background: #fff;
+        }
+
+        .search-section input {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        /* Calendar Widget Styling */
+        .calendar-section {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            background: #fafafa;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--text-main);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            text-align: center;
+            font-size: 0.75rem;
+        }
+
+        .calendar-day-name {
+            color: var(--text-muted);
+            font-weight: bold;
+            padding-bottom: 4px;
+        }
+
+        .calendar-cell {
+            padding: 5px 0;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        .calendar-cell:hover {
+            background-color: rgba(0,0,0,0.06);
+        }
+
+        .calendar-cell.active {
+            background-color: var(--accent-color);
+            color: white;
+            font-weight: bold;
+        }
+
+        .calendar-cell.muted {
+            color: #ccc;
+        }
+
+        .tag-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 0;
+        }
+
+        .tag-item {
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-main);
+        }
+
+        .tag-item:hover {
+            background-color: rgba(0,0,0,0.04);
+        }
+
+        .tag-item.active {
+            background-color: var(--highlight-bg);
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        .sidebar-footer {
+            padding: 10px 15px;
+            font-size: 0.8rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-muted);
+            background: #eaeaea;
+        }
+
+        /* Main Content Panel */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .top-toolbar {
+            height: 50px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            background: #fbfbfb;
+        }
+
+        .toolbar-title {
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .btn:hover {
+            background: var(--accent-hover);
+        }
+
+        /* Editor Area */
+        .editor-container {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: #fff;
+        }
+
+        .editor-container textarea {
+            width: 100%;
+            height: 90px;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            resize: none;
+            font-size: 0.95rem;
+        }
+
+        .editor-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .editor-actions input {
+            padding: 6px;
+            width: 250px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        /* Memo List View */
+        .memo-list {
+            flex: 1;
+            overflow-y: auto;
+            background: #fafafa;
+        }
+
+        .memo-datebar {
+            background: #eaeaea;
+            padding: 5px 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-color);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .memo-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: white;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            position: relative;
+        }
+
+        .memo-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .memo-text {
+            font-size: 0.95rem;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 5;
+            -webkit-box-orient: vertical;
+        }
+
+        .memo-text.expanded {
+            display: block;
+            -webkit-line-clamp: unset;
+        }
+
+        .memo-footer-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 4px;
+        }
+
+        .memo-tags {
+            font-size: 0.75rem;
+            color: var(--accent-color);
+        }
+
+        .memo-actions {
+            display: flex;
+            gap: 12px;
+            font-size: 0.75rem;
+        }
+
+        .memo-actions span {
+            color: var(--accent-color);
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .memo-actions span:hover {
+            text-decoration: underline;
+        }
+
+        .memo-actions span.delete-btn {
+            color: #d9534f;
+        }
+
+        .loading-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Configuration Modal for Google Sheets API Config -->
+    <div id="config-overlay">
+        <div class="config-modal">
+            <h2>Connect Google Sheets Backend</h2>
+            <p>Paste your deployed Google Apps Script Web App URL below. This script will handle saving and fetching memos directly from your Google Sheet.</p>
+            <input type="text" id="script-url-input" placeholder="https://script.google.com/macros/s/AKfycbxkXlguHiPQSdLI_wqNEC-4TG69XNfvMz_S918QbFyIOt9yPJBs8af30OHg2sLpZfkN/exec
+">
+            <button onclick="saveConfig()">Connect Sheet</button>
+        </div>
+    </div>
+
+    <!-- Sidebar Component -->
+    <aside>
+        <div>
+            <div class="sidebar-header">
+                <span>MomoNote</span>
+                <span style="font-size: 0.75rem; cursor: pointer; color: var(--accent-color);" onclick="reconfigure()">Settings</span>
+            </div>
+            
+            <!-- Calendar Widget Section -->
+            <div class="calendar-section">
+                <div class="calendar-header">
+                    <span id="cal-month-year">Month Year</span>
+                    <div>
+                        <span style="cursor:pointer; padding: 0 5px;" onclick="changeMonth(-1)">&lt;</span>
+                        <span style="cursor:pointer; padding: 0 5px;" onclick="changeMonth(1)">&gt;</span>
+                    </div>
+                </div>
+                <div class="calendar-grid" id="calendar-grid-container">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+
+            <!-- Search Option Section below Calendar -->
+            <div class="search-section">
+                <input type="text" id="sidebar-search-input" placeholder="Search notes..." oninput="handleSearchInput()">
+            </div>
+
+            <div class="tag-list" id="tag-list-container">
+                <!-- Dynamically populated tags -->
+            </div>
+        </div>
+        <div class="sidebar-footer" id="sync-status">
+            Status: Ready
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main>
+        <div class="top-toolbar">
+            <div class="toolbar-title" id="current-view-title">All Memos</div>
+            <button class="btn" onclick="fetchMemos()">Sync Now</button>
+        </div>
+
+        <!-- Note Creation Form -->
+        <div class="editor-container">
+            <textarea id="note-text-input" placeholder="Type a new memo..."></textarea>
+            <div class="editor-actions">
+                <input type="text" id="note-tags-input" placeholder="Tags (comma separated, e.g. work, ideas)">
+                <button class="btn" onclick="saveMemo()" id="save-btn-label">Save Memo</button>
+            </div>
+        </div>
+
+        <!-- Scrollable Memo List -->
+        <div class="memo-list" id="memo-list-container">
+            <div class="loading-state">Configure your Google Sheets backend to load memos.</div>
+        </div>
+    </main>
+
+    <script>
+        let WEB_APP_URL = localStorage.getItem('momonote_script_url') || '';
+        let memos = [];
+        let currentFilter = 'ALL';
+        let currentCalendarDate = new Date();
+        let selectedDateFilter = null;
+        let searchQuery = '';
+        let editingMemoId = null;
+
+        window.onload = function() {
+            renderCalendar();
+            if (WEB_APP_URL) {
+                document.getElementById('config-overlay').style.display = 'none';
+                fetchMemos();
+            }
+        };
+
+        function saveConfig() {
+            const url = document.getElementById('script-url-input').value.trim();
+            if (url) {
+                localStorage.setItem('momonote_script_url', url);
+                WEB_APP_URL = url;
+                document.getElementById('config-overlay').style.display = 'none';
+                fetchMemos();
+            }
+        }
+
+        function reconfigure() {
+            document.getElementById('script-url-input').value = WEB_APP_URL;
+            document.getElementById('config-overlay').style.display = 'flex';
+        }
+
+        async function fetchMemos() {
+            if (!WEB_APP_URL) return;
+            updateStatus("Syncing with Google Sheet...");
+            try {
+                const response = await fetch(WEB_APP_URL);
+                const data = await response.json();
+                if (data.status === 'success') {
+                    memos = data.memos;
+                    renderApp();
+                    updateStatus("Synced successfully");
+                } else {
+                    updateStatus("Error loading from sheet");
+                }
+            } catch (error) {
+                console.error(error);
+                updateStatus("Connection failed");
+            }
+        }
+
+        async function saveMemo() {
+            const text = document.getElementById('note-text-input').value.trim();
+            const tagsInput = document.getElementById('note-tags-input').value.trim();
+            if (!text) return;
+
+            const memoData = {
+                id: editingMemoId ? editingMemoId : 'memo_' + Date.now(),
+                timestamp: new Date().toISOString(),
+                text: text,
+                tags: tagsInput ? tagsInput.split(',').map(t => t.trim()) : [],
+                action: editingMemoId ? 'update' : 'create'
+            };
+
+            updateStatus(editingMemoId ? "Updating memo..." : "Saving to Google Sheet...");
+            
+            try {
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(memoData)
+                });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    document.getElementById('note-text-input').value = '';
+                    document.getElementById('note-tags-input').value = '';
+                    editingMemoId = null;
+                    document.getElementById('save-btn-label').innerText = 'Save Memo';
+                    fetchMemos();
+                } else {
+                    updateStatus("Failed to save");
+                }
+            } catch (error) {
+                console.error(error);
+                updateStatus("Save error");
+            }
+        }
+
+        function editMemo(id) {
+            const memo = memos.find(m => m.id === id);
+            if (!memo) return;
+            document.getElementById('note-text-input').value = memo.text;
+            let tArr = typeof memo.tags === 'string' ? memo.tags.split(',') : memo.tags;
+            document.getElementById('note-tags-input').value = tArr ? tArr.map(t => t.trim()).join(', ') : '';
+            editingMemoId = id;
+            document.getElementById('save-btn-label').innerText = 'Update Memo';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function deleteMemo(id) {
+            if (!confirm("Are you sure you want to delete this memo?")) return;
+
+            updateStatus("Deleting memo...");
+            try {
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ id: id, action: 'delete' })
+                });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    fetchMemos();
+                } else {
+                    updateStatus("Failed to delete");
+                }
+            } catch (error) {
+                console.error(error);
+                updateStatus("Delete error");
+            }
+        }
+
+        function toggleExpand(id) {
+            const textEl = document.getElementById(`memo-text-${id}`);
+            const btnEl = document.getElementById(`expand-btn-${id}`);
+            if (textEl.classList.contains('expanded')) {
+                textEl.classList.remove('expanded');
+                btnEl.innerText = 'Show More';
+            } else {
+                textEl.classList.add('expanded');
+                btnEl.innerText = 'Show Less';
+            }
+        }
+
+        function handleSearchInput() {
+            searchQuery = document.getElementById('sidebar-search-input').value.trim().toLowerCase();
+            if (searchQuery) {
+                selectedDateFilter = null;
+                currentFilter = 'ALL';
+                document.getElementById('current-view-title').innerText = `Search: "${searchQuery}"`;
+            } else {
+                document.getElementById('current-view-title').innerText = 'All Memos';
+            }
+            renderMemos();
+        }
+
+        function updateStatus(msg) {
+            document.getElementById('sync-status').innerText = "Status: " + msg;
+        }
+
+        function renderApp() {
+            renderCalendar();
+            renderTags();
+            renderMemos();
+        }
+
+        function renderCalendar() {
+            const gridContainer = document.getElementById('calendar-grid-container');
+            const monthYearLabel = document.getElementById('cal-month-year');
+            
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+            
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            monthYearLabel.innerText = `${monthNames[month]} ${year}`;
+            
+            let html = `
+                <div class="calendar-day-name">Su</div>
+                <div class="calendar-day-name">Mo</div>
+                <div class="calendar-day-name">Tu</div>
+                <div class="calendar-day-name">We</div>
+                <div class="calendar-day-name">Th</div>
+                <div class="calendar-day-name">Fr</div>
+                <div class="calendar-day-name">Sa</div>
+            `;
+            
+            const firstDayIndex = new Date(year, month, 1).getDay();
+            const totalDays = new Date(year, month + 1, 0).getDate();
+            const prevTotalDays = new Date(year, month, 0).getDate();
+            
+            for (let i = firstDayIndex; i > 0; i--) {
+                let dayNum = prevTotalDays - i + 1;
+                html += `<div class="calendar-cell muted">${dayNum}</div>`;
+            }
+            
+            for (let i = 1; i <= totalDays; i++) {
+                let dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                let isSelected = selectedDateFilter === dateString ? 'active' : '';
+                html += `<div class="calendar-cell ${isSelected}" onclick="filterByDate('${dateString}')">${i}</div>`;
+            }
+            
+            gridContainer.innerHTML = html;
+        }
+
+        function changeMonth(direction) {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + direction);
+            renderCalendar();
+        }
+
+        function filterByDate(dateString) {
+            selectedDateFilter = selectedDateFilter === dateString ? null : dateString;
+            currentFilter = 'ALL';
+            searchQuery = '';
+            document.getElementById('sidebar-search-input').value = '';
+            document.getElementById('current-view-title').innerText = selectedDateFilter ? `Memos on ${selectedDateFilter}` : 'All Memos';
+            renderApp();
+        }
+
+        function renderTags() {
+            const tagContainer = document.getElementById('tag-list-container');
+            let tagsSet = new Set();
+            memos.forEach(m => {
+                if (m.tags) {
+                    let parsedTags = typeof m.tags === 'string' ? m.tags.split(',') : m.tags;
+                    parsedTags.forEach(t => { if(t.trim()) tagsSet.add(t.trim()); });
+                }
+            });
+
+            let html = `<div class="tag-item ${currentFilter === 'ALL' && !selectedDateFilter && !searchQuery ? 'active' : ''}" onclick="setFilter('ALL')"><span>All Memos</span><span>${memos.length}</span></div>`;
+            
+            tagsSet.forEach(tag => {
+                let count = memos.filter(m => {
+                    let tArr = typeof m.tags === 'string' ? m.tags.split(',').map(s=>s.trim()) : m.tags;
+                    return tArr && tArr.includes(tag);
+                }).length;
+                html += `<div class="tag-item ${currentFilter === tag && !selectedDateFilter && !searchQuery ? 'active' : ''}" onclick="setFilter('${tag}')"><span>#${tag}</span><span>${count}</span></div>`;
+            });
+
+            tagContainer.innerHTML = html;
+        }
+
+        function setFilter(tag) {
+            currentFilter = tag;
+            selectedDateFilter = null;
+            searchQuery = '';
+            document.getElementById('sidebar-search-input').value = '';
+            document.getElementById('current-view-title').innerText = tag === 'ALL' ? 'All Memos' : '#' + tag;
+            renderApp();
+        }
+
+        function renderMemos() {
+            const listContainer = document.getElementById('memo-list-container');
+            
+            let filtered = memos.filter(m => {
+                // If search query is active
+                if (searchQuery) {
+                    return m.text.toLowerCase().includes(searchQuery) || 
+                           (m.tags && m.tags.toString().toLowerCase().includes(searchQuery));
+                }
+
+                // If calendar date filter is active
+                let dateObj = new Date(m.timestamp);
+                let dateString = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+
+                if (selectedDateFilter) {
+                    return dateString === selectedDateFilter;
+                }
+
+                // Tag filter active
+                if (currentFilter === 'ALL') return true;
+                let tArr = typeof m.tags === 'string' ? m.tags.split(',').map(s=>s.trim()) : m.tags;
+                return tArr && tArr.includes(currentFilter);
+            });
+
+            if (filtered.length === 0) {
+                listContainer.innerHTML = `<div class="loading-state">No memos found.</div>`;
+                return;
+            }
+
+            filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            let html = '';
+            let lastDateStr = '';
+
+            filtered.forEach(memo => {
+                let dateObj = new Date(memo.timestamp);
+                let dateStr = dateObj.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                let timeStr = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                if (dateStr !== lastDateStr) {
+                    html += `<div class="memo-datebar">${dateStr}</div>`;
+                    lastDateStr = dateStr;
+                }
+
+                let tagDisplay = '';
+                if (memo.tags) {
+                    let tArr = typeof memo.tags === 'string' ? memo.tags.split(',') : memo.tags;
+                    tagDisplay = tArr.map(t => `#${t.trim()}`).join(' ');
+                }
+
+                html += `
+                    <div class="memo-item">
+                        <div class="memo-header">
+                            <span>${timeStr}</span>
+                        </div>
+                        <div class="memo-text" id="memo-text-${memo.id}">${escapeHtml(memo.text)}</div>
+                        <div class="memo-footer-row">
+                            <div class="memo-tags">${tagDisplay}</div>
+                            <div class="memo-actions">
+                                <span onclick="editMemo('${memo.id}')">Edit</span>
+                                <span class="delete-btn" onclick="deleteMemo('${memo.id}')">Delete</span>
+                                <span id="expand-btn-${memo.id}" onclick="toggleExpand('${memo.id}')">Show More</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            listContainer.innerHTML = html;
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+    </script>
+</body>
+</html>
